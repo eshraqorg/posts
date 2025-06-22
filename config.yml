@@ -1,0 +1,7 @@
+yaml
+title: "مدونة إشراق"
+description: "مقالات الصحة النفسية والتنمية المجتمعية"
+url: "https://eshraqorg.github.io/posts"
+plugins:
+
+jekyll-feed
