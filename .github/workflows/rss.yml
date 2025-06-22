@@ -1,0 +1,24 @@
+name: Generate RSS Feed
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+      - run: npm install gray-matter date-fns
+      - run: node rss-generator.js
+      - name: Commit feed.xml
+        run: |
+          git config --global user.name 'github-actions'
+          git config --global user.email 'github-actions@github.com'
+          git add feed.xml
+          git commit -m '🔄 تحديث تلقائي لملف feed.xml' || echo "لا يوجد تغييرات"
+          git push
