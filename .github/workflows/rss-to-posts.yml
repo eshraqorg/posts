@@ -1,40 +1,27 @@
-import feedparser
-import os
-from markdownify import markdownify as md
+name: RSS to Posts
 
-# رابط الـ RSS
-RSS_URL = "https://eshraq.org/feed/"  # يمكن تغييره إلى sitemap.rss إذا أحببت
+on:
+  schedule:
+    - cron: '0 * * * *' # كل ساعة
+  workflow_dispatch:
 
-# مجلد لحفظ ملفات Markdown
-OUTPUT_DIR = "posts_md"
+jobs:
+  rss-to-posts:
+    runs-on: ubuntu-latest
 
-# إنشاء المجلد إذا لم يكن موجودًا
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-# جلب الـ RSS
-feed = feedparser.parse(RSS_URL)
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
 
-for entry in feed.entries:
-    # تحديد عنوان الملف مع إزالة أي رموز غير مناسبة للملفات
-    title = getattr(entry, 'title', 'No Title').replace('/', '-').strip()
-    filename = f"{OUTPUT_DIR}/{title}.md"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install feedparser markdownify
 
-    # الحصول على النص: content -> summary -> description
-    if hasattr(entry, 'content') and len(entry.content) > 0:
-        html_text = entry.content[0].value
-    elif hasattr(entry, 'summary'):
-        html_text = entry.summary
-    elif hasattr(entry, 'description'):
-        html_text = entry.description
-    else:
-        html_text = ''
-
-    # تحويل HTML إلى Markdown
-    text = md(html_text, heading_style="ATX")
-
-    # كتابة المحتوى في ملف Markdown
-    with open(filename, 'w', encoding='utf-8') as f:
-        f.write(f"# {title}\n\n")
-        f.write(text)
-
-    print(f"✅ تم إنشاء الملف: {filename}")
+      - name: Run RSS to Markdown script
+        run: python scripts/rss_to_md.py
